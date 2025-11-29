@@ -14,12 +14,14 @@ import {Ownable} from "../lib/openzeppelin-contracts/contracts/access/Ownable.so
 contract CryptoCrowd is ReentrancyGuard {
 
     // Errors
+    error NotCampaignOwner();
     error CampaignDoesNotExist();
     error DeadlineNotReached();
     error GoalNotReached();
     error AlreadyClaimed();
     error DeadlineNotValid();
     error GoalMustBeAboveZero();
+    error NoContribution();
 
     // Events
     event CampaignCreated(
@@ -43,8 +45,28 @@ contract CryptoCrowd is ReentrancyGuard {
         uint256 amount
     );
 
+    // Constructor
+    constructor() {
+        i_admin = msg.sender; // deployer becomes admin
+    }
+
+    // Modifiers
+    modifier onlyCampaignOwner(uint256 _id) {
+        if (msg.sender != campaigns[_id].creator) {
+            revert NotCampaignOwner();
+        }
+        _;
+    }
+    modifier campaignMustExist(uint256 _id) {
+        if (!campaigns[_id].exists) {
+            revert CampaignDoesNotExist();
+        }
+        _;
+    }
+
     // State Variables
     uint256 public campaignCount;
+    address public immutable i_admin;
 
     // Mappings
     mapping(uint256 => Campaign) public campaigns;
@@ -65,8 +87,12 @@ contract CryptoCrowd is ReentrancyGuard {
 
     // Create Campaign
     function createCampaign(uint256 _goal, uint256 _durationInDays) external {
-        if (_goal == 0) revert GoalMustBeAboveZero();
-        if (_durationInDays < 1) revert DeadlineNotValid();
+        if (_goal == 0) {
+            revert GoalMustBeAboveZero();
+        }
+        if (_durationInDays < 1) {
+            revert DeadlineNotValid();
+        }
 
         campaignCount++;
         uint256 deadline = block.timestamp + (_durationInDays * 1 days);
