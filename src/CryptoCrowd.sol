@@ -4,8 +4,8 @@ pragma solidity ^0.8.30;
 /**
  * @title Milestone-Based Crowdfunding
  * @author ZerosAndOnes
- * @notice 
- * @dev
+ * @notice Allows campaign creation, funding, refunds, and secure withdrawals.
+ * @dev Uses pull-payment pattern, OZ ReentrancyGuard, and custom errors.
  */
 
 import {ReentrancyGuard} from "../lib/openzeppelin-contracts/contracts/security/ReentrancyGuard.sol";
